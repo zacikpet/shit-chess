@@ -22,7 +22,12 @@ trait Obstructible extends Role {
 
 case class Pawn() extends Role with Obstructible {
 
-  override def canMove(from: Position, to: Position, side: Side, board: Board) = {
+  override def canMove(
+      from: Position,
+      to: Position,
+      side: Side,
+      board: Board
+  ) = {
     val start = side match {
       case White => 2
       case Black => board.y - 1
@@ -35,7 +40,12 @@ case class Pawn() extends Role with Obstructible {
     canMoveOne || canMoveTwo
   }
 
-  override def canTake(from: Position, to: Position, side: Side, board: Board): Boolean =
+  override def canTake(
+      from: Position,
+      to: Position,
+      side: Side,
+      board: Board
+  ): Boolean =
     from.y + side.direction == to.y && abs(from.x - to.x) == 1
 }
 
@@ -57,7 +67,8 @@ case class Bishop() extends Role with Obstructible {
 
 case class Queen() extends Role with Obstructible {
   override def canMove(from: Position, to: Position, side: Side, board: Board) =
-    Rook().canMove(from, to, side, board) || Bishop().canMove(from, to, side, board)
+    Rook()
+      .canMove(from, to, side, board) || Bishop().canMove(from, to, side, board)
 }
 
 case class King() extends Role with Obstructible {

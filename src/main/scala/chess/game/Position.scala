@@ -35,7 +35,8 @@ object Position {
       case (Position(x1, y1), Position(x2, y2)) if y1 == y2 =>
         (min(x1, x2) + 1 until max(x1, x2)).map(x => Position(x, y1)).toList
 
-      case (Position(x1, y1), Position(x2, y2)) if abs(x1 - x2) == abs(y1 - y2) =>
+      case (Position(x1, y1), Position(x2, y2))
+          if abs(x1 - x2) == abs(y1 - y2) =>
         (1 until abs(x1 - x2))
           .map(i => Position(x1 + i * step(x1, x2), y1 + i * step(y1, y2)))
           .toList
@@ -43,7 +44,8 @@ object Position {
       case _ => Nil
 
   def fromString(str: String): Position = {
-    if (str.length != 2) throw new IllegalArgumentException("Position must be 2 characters long")
+    if (str.length != 2)
+      throw new IllegalArgumentException("Position must be 2 characters long")
 
     val x = str(0).toInt - 96
     val y = str(1).toInt - 48

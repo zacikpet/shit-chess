@@ -8,7 +8,9 @@ object Game {
     turn(board, White, Stream.continually(players.toList).flatten.iterator)
   }
 
-  def turn(board: Board, side: Side, playerIterator: Iterator[Player])(using ui: UI): Board = {
+  def turn(board: Board, side: Side, playerIterator: Iterator[Player])(using
+      ui: UI
+  ): Board = {
     val player = playerIterator.next()
 
     val newBoard = player.turn(board, side)

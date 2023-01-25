@@ -23,7 +23,9 @@ object Server:
   )
 
   object ConnectedClient:
-    def apply[F[_]: Concurrent: UUIDGen](socket: Socket[F]): F[ConnectedClient[F]] =
+    def apply[F[_]: Concurrent: UUIDGen](
+        socket: Socket[F]
+    ): F[ConnectedClient[F]] =
       for {
         id <- UUIDGen[F].randomUUID
         socket <- MessageSocket(
@@ -34,14 +36,18 @@ object Server:
         )
       } yield ConnectedClient(id, None, socket)
 
-  case class State[F[_]](val side: Side, val clients: Map[UUID, ConnectedClient[F]])
+  case class State[F[_]](
+      val side: Side,
+      val clients: Map[UUID, ConnectedClient[F]]
+  )
 
   class StateRef[F[_]: Concurrent](state: Ref[F, State[F]]):
 
     def get(id: UUID): F[Option[ConnectedClient[F]]] =
       state.get.map(_.clients.get(id))
 
-    def all: F[List[ConnectedClient[F]]] = state.get.map(_.clients.values.toList)
+    def all: F[List[ConnectedClient[F]]] =
+      state.get.map(_.clients.values.toList)
 
     def allExcept(id: UUID): F[List[ConnectedClient[F]]] =
       state.get.map(_.clients.values.filter(_.id != id).toList)
@@ -50,13 +56,16 @@ object Server:
       state.update(old => State(old.side, old.clients + (client.id -> client)))
 
     def unregister(id: UUID): F[Option[ConnectedClient[F]]] =
-      state.modify(old => (State(old.side, old.clients - id), old.clients.get(id)))
+      state.modify(old =>
+        (State(old.side, old.clients - id), old.clients.get(id))
+      )
 
     def setSide(clientId: UUID): F[Side] =
       state.modify { state =>
         val sideToSet = determineSide(state.clients - clientId)
 
-        val updatedClient = state.clients.get(clientId).map(_.copy(side = Some(sideToSet)))
+        val updatedClient =
+          state.clients.get(clientId).map(_.copy(side = Some(sideToSet)))
 
         val updatedClients = updatedClient
           .map(c => state.clients + (clientId -> c))
@@ -95,12 +104,16 @@ object Server:
                 client
                   .flatMap(_.side)
                   .traverse_(side =>
-                    clients.broadcast(Protocol.ServerCommand.Alert(s"$side disconnected."))
+                    clients.broadcast(
+                      Protocol.ServerCommand.Alert(s"$side disconnected.")
+                    )
                   )
               } *> Console[F].info(s"Unregistered client ${client.id}")
 
             Stream
-              .bracket(ConnectedClient[F](clientSocket).flatTap(clients.register))(
+              .bracket(
+                ConnectedClient[F](clientSocket).flatTap(clients.register)
+              )(
                 unregisterClient
               )
               .flatMap(client => handleClient[F](clients, client, clientSocket))
@@ -115,10 +128,15 @@ object Server:
       socket: Socket[F]
   ): Stream[F, Nothing] =
     logClient(client, socket)
-      ++ Stream.exec(client.socket.write1(Protocol.ServerCommand.Alert("Welcome to Chess")))
+      ++ Stream.exec(
+        client.socket.write1(Protocol.ServerCommand.Alert("Welcome to Chess"))
+      )
       ++ processIncoming(state, client.id, client.socket)
 
-  def logClient[F[_]: FlatMap: Console](client: ConnectedClient[F], socket: Socket[F]) =
+  def logClient[F[_]: FlatMap: Console](
+      client: ConnectedClient[F],
+      socket: Socket[F]
+  ) =
     Stream.exec(socket.remoteAddress.flatMap { clientAddress =>
       Console[F].info(s"Accepted client ${client.id} on $clientAddress")
     })
@@ -150,14 +168,18 @@ object Server:
                     val move = Move.fromString(message)
                     if (isOnTurn) {
                       val cmd = Protocol.ServerCommand.SendMove(move.toString)
-                      val nextTurn = Protocol.ServerCommand.Alert(s"${side.opposite}'s turn")
-                      state.turn() *> state.broadcastExcept(cmd, client.id) *> state
+                      val nextTurn =
+                        Protocol.ServerCommand.Alert(s"${side.opposite}'s turn")
+                      state.turn() *> state
+                        .broadcastExcept(cmd, client.id) *> state
                         .broadcast(nextTurn)
                     } else {
-                      socket.write1(Protocol.ServerCommand.Alert("Not your turn"))
+                      socket
+                        .write1(Protocol.ServerCommand.Alert("Not your turn"))
                     }
                   } catch {
-                    case e => socket.write1(Protocol.ServerCommand.Alert(e.getMessage))
+                    case e =>
+                      socket.write1(Protocol.ServerCommand.Alert(e.getMessage))
                   }
                 }
           case None => F.unit
@@ -169,7 +191,8 @@ object Server:
             client.side match
               case None => F.unit
               case Some(side) =>
-                val cmd = Protocol.ServerCommand.Alert(s"${side.opposite} wins!")
+                val cmd =
+                  Protocol.ServerCommand.Alert(s"${side.opposite} wins!")
                 state.broadcast(cmd)
           case None => F.unit
         }

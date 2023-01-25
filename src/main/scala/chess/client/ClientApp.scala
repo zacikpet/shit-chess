@@ -13,7 +13,9 @@ object ClientApp extends IOApp:
         Opts
           .option[String]("address", "Address of chat server")
           .withDefault("127.0.0.1")
-          .mapValidated(p => IpAddress.fromString(p).toValidNel("Invalid IP address")),
+          .mapValidated(p =>
+            IpAddress.fromString(p).toValidNel("Invalid IP address")
+          ),
         Opts
           .option[Int]("port", "Port of chat server")
           .withDefault(5555)

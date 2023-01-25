@@ -28,7 +28,11 @@ class Board(
 
     val movedPiece = piece.move(move.to, this)
 
-    val newPieces = pieces.filter(p => p != piece && p.position != move.to) + movedPiece
+    val newPieces =
+      pieces.filter(p => p != piece && p.position != move.to) + movedPiece
+
+    println("Board turn was " + turn)
+    println("Board turn is now " + turn.opposite)
 
     Board(x, y, newPieces, turn.opposite)
   }
@@ -38,7 +42,8 @@ class Board(
 
     val movedPiece = piece.uncheckedMove(move.to)
 
-    val newPieces = pieces.filter(p => p != piece && p.position != move.to) + movedPiece
+    val newPieces =
+      pieces.filter(p => p != piece && p.position != move.to) + movedPiece
 
     Board(x, y, newPieces, turn.opposite)
   }
@@ -87,10 +92,14 @@ class Board(
   def inCheck(side: Side): Boolean = {
     val king = pieces.find(p => p.side == side && p.role.isKing)
 
-    pieces.exists(p => p.side == side.opposite && p.canTakeKing(king.get.position, this))
+    pieces.exists(p =>
+      p.side == side.opposite && p.canTakeKing(king.get.position, this)
+    )
   }
 
   def inCheckMate(side: Side): Boolean =
-    inCheck(side) && pieces.filter(_.side == side).forall(p => p.validMoves(this).isEmpty)
+    inCheck(side) && pieces
+      .filter(_.side == side)
+      .forall(p => p.validMoves(this).isEmpty)
 
 }

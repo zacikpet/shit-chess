@@ -10,7 +10,9 @@ case class HumanPlayer() extends Player {
   override def turn(board: Board, side: Side)(using ui: UI): Board =
     select(board, side)
 
-  def select(board: Board, side: Side, message: Option[String] = None)(using ui: UI): Board = {
+  def select(board: Board, side: Side, message: Option[String] = None)(using
+      ui: UI
+  ): Board = {
     ui.draw(board)
 
     try {
@@ -32,7 +34,12 @@ case class HumanPlayer() extends Player {
     }
   }
 
-  def place(board: Board, from: Position, side: Side, message: Option[String] = None)(using
+  def place(
+      board: Board,
+      from: Position,
+      side: Side,
+      message: Option[String] = None
+  )(using
       ui: UI
   ): Board = {
     ui.draw(board)
@@ -45,7 +52,8 @@ case class HumanPlayer() extends Player {
 
     try board.applyMove(Move(from, target), side)
     catch {
-      case e: InvalidMoveException => select(board.clearHighlight, side, Some(e.getMessage))
+      case e: InvalidMoveException =>
+        select(board.clearHighlight, side, Some(e.getMessage))
     }
   }
 
@@ -54,7 +62,10 @@ case class HumanPlayer() extends Player {
 case class AIPlayer(side: Side, depth: Int) extends Player {
 
   override def turn(board: Board, side: Side)(using ui: UI): Board = {
-    val moves = board.pieces.filter(_.side == side).toList.flatMap(piece => piece.validMoves(board))
+    val moves = board.pieces
+      .filter(_.side == side)
+      .toList
+      .flatMap(piece => piece.validMoves(board))
 
     println(value(board))
 

@@ -15,21 +15,29 @@ case class Piece(val side: Side, val role: Role, val position: Position) {
     Piece(side, role, target)
 
   def canMove(target: Position, board: Board): Boolean = {
-    lazy val move = role.canMove(position, target, side, board) && !board.occupied(target)
+    lazy val move =
+      role.canMove(position, target, side, board) && !board.occupied(target)
 
     lazy val take =
-      role.canTake(position, target, side, board) && board.occupied(target, side.opposite)
+      role.canTake(position, target, side, board) && board.occupied(
+        target,
+        side.opposite
+      )
 
     lazy val obstructed = board.obstructed(position, target, role)
 
-    lazy val willBeInCheck = board.applyUncheckedMove(Move(position, target)).inCheck(side)
+    lazy val willBeInCheck =
+      board.applyUncheckedMove(Move(position, target)).inCheck(side)
 
     (move || take) && !obstructed && !willBeInCheck
   }
 
   def canTakeKing(target: Position, board: Board): Boolean = {
     lazy val take =
-      role.canTake(position, target, side, board) && board.occupied(target, side.opposite)
+      role.canTake(position, target, side, board) && board.occupied(
+        target,
+        side.opposite
+      )
 
     lazy val obstructed = board.obstructed(position, target, role)
 

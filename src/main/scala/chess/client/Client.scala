@@ -33,16 +33,11 @@ object Client:
     def applyOpponentMove(move: Move): F[Unit] =
       state.update(s => State(s.board.applyMove(move, s.side.opposite), s.side))
 
-    def updateSide(side: Side): F[Unit] = state.update(s => State(s.board, side))
+    def updateSide(side: Side): F[Unit] =
+      state.update(s => State(s.board, side))
 
-    def inCheckMate: F[Boolean] = state.get.map(s => s.board.inCheckMate(s.side))
-
-    def turn: F[Unit] = state.update(s =>
-      State(
-        Board(s.board.x, s.board.y, s.board.pieces, s.board.turn.opposite),
-        s.side
-      )
-    )
+    def inCheckMate: F[Boolean] =
+      state.get.map(s => s.board.inCheckMate(s.side))
 
   object StateRef:
     def apply[F[_]: Concurrent]: F[StateRef[F]] =
@@ -56,7 +51,9 @@ object Client:
     connect(address).handleErrorWith {
       case _: ConnectException =>
         val retryDelay = 5.seconds
-        Stream.exec(Console[F].errorln(s"Failed to connect. Retrying in $retryDelay.")) ++
+        Stream.exec(
+          Console[F].errorln(s"Failed to connect. Retrying in $retryDelay.")
+        ) ++
           start(address)
             .delayBy(retryDelay)
       case _: UserQuit => Stream.empty
@@ -93,7 +90,11 @@ object Client:
         }
 
   def processIncoming[F[_]: Console](
-      messageSocket: MessageSocket[F, Protocol.ServerCommand, Protocol.ClientCommand],
+      messageSocket: MessageSocket[
+        F,
+        Protocol.ServerCommand,
+        Protocol.ClientCommand
+      ],
       state: StateRef[F]
   )(implicit F: MonadError[F, Throwable]): Stream[F, Unit] =
     messageSocket.read.evalMap {
@@ -116,8 +117,9 @@ object Client:
           state.get.map(_.board).map(TerminalUI.draw) *>
           state.inCheckMate.flatMap {
             _ match
-              case true  => messageSocket.write1(Protocol.ClientCommand.CheckMate)
-              case false => state.turn
+              case true =>
+                messageSocket.write1(Protocol.ClientCommand.CheckMate)
+              case false => F.unit
           }
 
       case Protocol.ServerCommand.GameStart =>
