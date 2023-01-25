@@ -1,0 +1,4 @@
+[debug] [fs2-chat-test] Classpath dependencies List()
+[debug] [fs2-chat-test] Dependencies from configurations List(fs2-chat)
+[debug] Bloop wrote the configuration of project 'fs2-chat-test' to '/home/pepe/fit/psl/fs2-chat/.bloop/fs2-chat-test.json'
+[success] Generated .bloop/fs2-chat-test.json

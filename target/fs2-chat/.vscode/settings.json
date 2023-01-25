@@ -1,0 +1,9 @@
+{
+    "files.watcherExclude": {
+        "**/target": true
+    },
+    "[scala]": {
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "scalameta.metals"
+    }
+}
